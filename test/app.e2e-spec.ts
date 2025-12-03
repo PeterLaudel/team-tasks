@@ -45,7 +45,6 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'test2@gmail.com', password: 'testpassword300' })
-      .expect(201)
-      .expect({ message: 'Invalid credentials' });
+      .expect(404)
   });
 });

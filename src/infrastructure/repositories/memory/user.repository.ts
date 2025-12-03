@@ -1,15 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  CreateUser,
+  IUserRepository,
+  User,
+} from '../interfaces/user.repository';
 
-export interface User {
-  id: number;
-  email: string;
-  password: string;
-}
-
-export type CreateUser = Omit<User, 'id'>;
-
-@Injectable()
-export class UserRepository {
+export class UserRepository implements IUserRepository {
   private users: User[] = [];
 
   async save(user: CreateUser): Promise<User> {

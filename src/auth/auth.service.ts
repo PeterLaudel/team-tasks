@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUser, User, UserRepository } from './userRepository';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
+import { IUserRepository, CreateUser } from '../infrastructure/repositories/interfaces/user.repository';
 
 type LoginUser = CreateUser;
 
@@ -8,7 +8,7 @@ const SALT_ROUNDS = 10;
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRespository: UserRepository) {}
+  constructor(private readonly userRespository: IUserRepository) {}
 
   async createUser(user: CreateUser) {
     return this.userRespository.save({
@@ -19,10 +19,10 @@ export class UserService {
 
   async loginUser(user: LoginUser) {
     const foundUser = await this.userRespository.findByEmail(user.email);
-    if (!foundUser) return false;
+    if (!foundUser) throw new NotFoundException();
 
     const match = await bcrypt.compare(user.password, foundUser.password);
-    if (!match) return false;
+    if (!match) throw new NotFoundException();
 
     return true;
   }
