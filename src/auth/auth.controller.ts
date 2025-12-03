@@ -14,11 +14,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginUser: LoginUser) {
-    const success = await this.userService.loginUser(loginUser);
-    if (!success) {
-      return { message: 'Invalid credentials' };
-    }
-    return { message: 'Login successful' };
+    return this.userService.loginUser(loginUser);
   }
 
   @Get('users')

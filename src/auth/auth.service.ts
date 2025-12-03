@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
-import { IUserRepository, CreateUser } from '../infrastructure/repositories/interfaces/user.repository';
+import {
+  IUserRepository,
+  CreateUser,
+} from '../infrastructure/repositories/interfaces/user.repository';
+import { JwtService } from '@nestjs/jwt';
 
 type LoginUser = CreateUser;
 
@@ -8,7 +12,10 @@ const SALT_ROUNDS = 10;
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRespository: IUserRepository) {}
+  constructor(
+    private readonly userRespository: IUserRepository,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async createUser(user: CreateUser) {
     return this.userRespository.save({
@@ -24,7 +31,25 @@ export class UserService {
     const match = await bcrypt.compare(user.password, foundUser.password);
     if (!match) throw new NotFoundException();
 
-    return true;
+    const accessToken = this.jwtService.sign({
+      sub: foundUser.id,
+      email: foundUser.email,
+    });
+
+    const refreshToken = this.jwtService.sign(
+      { sub: foundUser.id, email: foundUser.email },
+      { expiresIn: '7d' },
+    );
+
+    const updatedUser = await this.userRespository.save({
+      ...foundUser,
+      refreshToken,
+    });
+
+    return {
+      accessToken,
+      refreshToken: updatedUser.refreshToken,
+    };
   }
 
   async all() {

@@ -33,7 +33,14 @@ describe('AppController (e2e)', () => {
       .post('/auth/login')
       .send({ email: 'test2@gmail.com', password: 'testpassword200' })
       .expect(201)
-      .expect({ message: 'Login successful' });
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+          }),
+        );
+      });
   });
 
   it('/auth/login (POST) - failure', async () => {
@@ -45,6 +52,6 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'test2@gmail.com', password: 'testpassword300' })
-      .expect(404)
+      .expect(404);
   });
 });
