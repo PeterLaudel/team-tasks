@@ -3,17 +3,32 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { JwtService } from '@nestjs/jwt';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
+  const JWT_SECRET = process.env.JWT_SECRET;
+  const testJwtSecret = 'testsecretkey';
+
+  const jwtService = new JwtService({
+    secret: testJwtSecret,
+    signOptions: { expiresIn: '1h' },
+  });
+
   beforeEach(async () => {
+    process.env.JWT_SECRET = testJwtSecret;
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterEach(async () => {
+    process.env.JWT_SECRET = JWT_SECRET;
+    await app.close();
   });
 
   it('/auth/register (POST)', () => {
@@ -34,12 +49,15 @@ describe('AppController (e2e)', () => {
       .send({ email: 'test2@gmail.com', password: 'testpassword200' })
       .expect(201)
       .expect((res) => {
-        expect(res.body).toEqual(
-          expect.objectContaining({
-            accessToken: expect.any(String),
-            refreshToken: expect.any(String),
-          }),
-        );
+        const body = jwtService.verify(res.body.accessToken, {
+          secret: testJwtSecret,
+        });
+        expect(body).toEqual({
+          email: 'test2@gmail.com',
+          iat: expect.any(Number),
+          exp: expect.any(Number),
+          id: expect.any(Number),
+        });
       });
   });
 

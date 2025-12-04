@@ -32,14 +32,11 @@ export class UserService {
     if (!match) throw new NotFoundException();
 
     const accessToken = this.jwtService.sign({
-      sub: foundUser.id,
+      id: foundUser.id,
       email: foundUser.email,
     });
 
-    const refreshToken = this.jwtService.sign(
-      { sub: foundUser.id, email: foundUser.email },
-      { expiresIn: '7d' },
-    );
+    const refreshToken = this.jwtService.sign({}, { expiresIn: '7d' });
 
     const updatedUser = await this.userRespository.save({
       ...foundUser,
@@ -50,9 +47,5 @@ export class UserService {
       accessToken,
       refreshToken: updatedUser.refreshToken,
     };
-  }
-
-  async all() {
-    return this.userRespository.all();
   }
 }

@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CreateUser, LoginUser, User } from './auth.dto';
 import { UserService } from './auth.service';
-import { Log } from 'kysely';
+import { Public } from './public';
 
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly userService: UserService) {}
@@ -15,10 +16,5 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginUser: LoginUser) {
     return this.userService.loginUser(loginUser);
-  }
-
-  @Get('users')
-  async allUsers(): Promise<User[]> {
-    return this.userService.all();
   }
 }
