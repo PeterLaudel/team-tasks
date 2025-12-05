@@ -21,6 +21,11 @@ export class UserRepository implements IUserRepository {
     return user;
   }
 
+  async findByRefreshToken(refreshToken: string): Promise<User | undefined> {
+    const user = this.users.find((user) => user.refreshToken === refreshToken);
+    return user;
+  }
+
   async all() {
     return Promise.resolve(this.users);
   }

@@ -48,4 +48,32 @@ export class UserService {
       refreshToken: updatedUser.refreshToken,
     };
   }
+
+  async refreshToken(refreshToken: string) {
+    //verify token
+    await this.jwtService.verifyAsync<{ exp: number }>(refreshToken);
+
+    const foundUser =
+      await this.userRespository.findByRefreshToken(refreshToken);
+    if (!foundUser || foundUser.refreshToken !== refreshToken) {
+      throw new NotFoundException();
+    }
+
+    const accessToken = this.jwtService.sign({
+      id: foundUser.id,
+      email: foundUser.email,
+    });
+
+    const newRefreshToken = this.jwtService.sign({}, { expiresIn: '7d' });
+
+    const updatedUser = await this.userRespository.save({
+      ...foundUser,
+      refreshToken: newRefreshToken,
+    });
+
+    return {
+      accessToken,
+      refreshToken: updatedUser.refreshToken,
+    };
+  }
 }

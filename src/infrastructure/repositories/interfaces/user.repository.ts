@@ -13,5 +13,6 @@ export type CreateUser = Omit<User, 'id'>;
 export abstract class IUserRepository {
   abstract save(user: CreateUser): Promise<User>;
   abstract findByEmail(email: string): Promise<User | undefined>;
+  abstract findByRefreshToken(refreshToken: string): Promise<User | undefined>;
   abstract all(): Promise<User[]>;
 }
